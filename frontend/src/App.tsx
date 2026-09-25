@@ -6,25 +6,33 @@ import Submit from "./pages/Submit";
 
 function App() {
   return (
-    <>
-      <header>
-        <nav>
-          <NavLink to="/">Submit Complaint</NavLink>
-          {" | "}
-          <NavLink to="/dashboard">Dashboard</NavLink>
-          {" | "}
-          <NavLink to="/stats">Statistics</NavLink>
+    <div className="app-shell">
+      <header className="app-header">
+        <h1>CivicPulse</h1>
+
+        <nav className="app-nav">
+          <NavLink to="/" end>
+            Submit Complaint
+          </NavLink>
+
+          <NavLink to="/dashboard">
+            Dashboard
+          </NavLink>
+
+          <NavLink to="/stats">
+            Statistics
+          </NavLink>
         </nav>
       </header>
 
-      <main>
+      <main className="app-main">
         <Routes>
           <Route path="/" element={<Submit />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/stats" element={<Stats />} />
         </Routes>
       </main>
-    </>
+    </div>
   );
 }
 
