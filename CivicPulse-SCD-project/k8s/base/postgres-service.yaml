@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: civicpulse
+spec:
+  # ClusterIP (the default) -- never NodePort or LoadBalancer for a
+  # database. Only pods inside the cluster can reach it, on purpose.
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432

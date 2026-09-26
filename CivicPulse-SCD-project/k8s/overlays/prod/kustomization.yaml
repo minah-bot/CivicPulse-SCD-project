@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+ 
+namespace: civicpulse
+ 
+resources:
+  - ../../base
+ 
+# Production replica counts match base (2 backend, 2 frontend) --
+# this overlay's real job is pinning the image tag. CI's cd.yml
+# replaces "REPLACE_WITH_SHA" with the actual commit SHA being deployed
+# right before `kubectl apply -k` runs, e.g. via `kustomize edit set image`.
+# This is what makes rollback a one-line `kubectl set image` back to the
+# previous SHA, and what the deploy-by-SHA ADR (0003) is about.
+images:
+  - name: ghcr.io/minah-bot/civicpulse-backend
+    newTag: REPLACE_WITH_SHA
+  - name: ghcr.io/minah-bot/civicpulse-frontend
+    newTag: REPLACE_WITH_SHA
+ 
+patches:
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "750m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "512Mi"
