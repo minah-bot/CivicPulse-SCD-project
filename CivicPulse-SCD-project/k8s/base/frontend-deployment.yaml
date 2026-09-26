@@ -1,0 +1,39 @@
+# k8s/base/frontend-deployment.yaml
+#
+# NOTE FOR THE TEAM: C already wrote frontend-deployment.yaml on her
+# branch (currently sitting flat under k8s/, not in base/). Before
+# using this file, check hers first and merge the real details (her
+# actual image name, any env vars her frontend needs, healthcheck path
+# nginx serves) into this base/ version -- don't just overwrite her
+# work with this placeholder blindly. This exists so base/ is complete
+# even before that reconciliation happens.
+ 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: civicpulse
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/minah-bot/civicpulse-frontend:placeholder
+          ports:
+            - containerPort: 80
+          resources:
+            requests: { cpu: "50m", memory: "64Mi" }
+            limits: { cpu: "200m", memory: "128Mi" }
+          readinessProbe:
+            httpGet: { path: /, port: 80 }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /, port: 80 }
+            periodSeconds: 10

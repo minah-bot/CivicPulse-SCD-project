@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: civicpulse
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          # base image name only -- overlays set the real tag (deploy by
+          # commit SHA, never :latest). See docs/adr/0003-deploy-by-sha.md
+          image: ghcr.io/minah-bot/civicpulse-backend:placeholder
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef: { name: civicpulse-config }
+            - secretRef: { name: civicpulse-secrets }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+ 
+          # startupProbe: slow start is not failure -- this is what stops
+          # restart loops on boot. Gives the app up to 60s (30 * 2s) to
+          # come up before liveness even starts checking it.
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            failureThreshold: 30
+            periodSeconds: 2
+ 
+          # livenessProbe: independent of the database on purpose. If
+          # Postgres is briefly unreachable, that's a readiness problem,
+          # not a reason to kill and restart a perfectly healthy backend
+          # process -- restarting it wouldn't fix a DB outage anyway.
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 10
+            failureThreshold: 3
+ 
+          # readinessProbe: DEPENDENT on DB + Redis. If either is down,
+          # this pod should stop receiving traffic from the Service until
+          # both are reachable again, even though the process itself is
+          # still alive.
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            periodSeconds: 5
+            failureThreshold: 3
