@@ -7,7 +7,7 @@
 
 import os
 
-from app.schemas import TriageProvider
+from app.providers.base import TriageProvider
 
 
 def get_provider() -> TriageProvider:

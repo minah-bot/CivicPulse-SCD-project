@@ -41,9 +41,9 @@ def test_simulated_provider_is_deterministic():
 
 def test_rule_provider_categorizes_water_complaint():
     result = RuleProvider().triage("There is a burst water pipe flooding the road", "Elm St")
-    assert result.category == Category.water
+    assert result.category == Category.WATER
 
 
 def test_rule_provider_flags_urgent_as_high_priority():
     result = RuleProvider().triage("URGENT: gas leak, this is an emergency", "Oak Ave")
-    assert result.priority == Priority.high
+    assert result.priority == Priority.HIGH
