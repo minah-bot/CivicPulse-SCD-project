@@ -8,11 +8,10 @@
 from app.schemas import Category, Priority, TriageResult
 
 _RULES: list[tuple[Category, list[str]]] = [
-    (Category.water, ["water", "leak", "pipe", "sewage", "drain", "flood"]),
-    (Category.electricity, ["power", "electric", "outage", "wire", "transformer", "spark"]),
-    (Category.sanitation, ["garbage", "trash", "waste", "dump", "smell", "rotting"]),
-    (Category.roads, ["road", "pothole", "traffic", "street", "bridge", "crack"]),
-    (Category.streetlights, ["light", "lamp", "dark", "streetlight", "bulb"]),
+    (Category.WATER, ["water", "leak", "pipe", "sewage", "drain", "flood"]),
+    (Category.ELECTRICITY, ["power", "electric", "outage", "wire", "transformer", "spark", "light", "lamp", "streetlight", "bulb"]),
+    (Category.SANITATION, ["garbage", "trash", "waste", "dump", "smell", "rotting"]),
+    (Category.ROADS, ["road", "pothole", "traffic", "street", "bridge", "crack"]),
 ]
 
 _URGENT_WORDS = ["urgent", "danger", "emergency", "injur", "fire", "collapse", "unsafe"]
@@ -25,18 +24,18 @@ class RuleProvider:
     def triage(self, text: str, location: str) -> TriageResult:
         lowered = text.lower()
 
-        category = Category.other
+        category = Category.OTHER
         for cat, words in _RULES:
             if any(w in lowered for w in words):
                 category = cat
                 break
 
         if any(w in lowered for w in _URGENT_WORDS):
-            priority = Priority.high
+            priority = Priority.HIGH
         elif any(w in lowered for w in _LOW_WORDS):
-            priority = Priority.low
+            priority = Priority.LOW
         else:
-            priority = Priority.normal
+            priority = Priority.MEDIUM
 
         first_sentence = text.strip().split(".")[0][:140]
         summary = first_sentence or f"{category.value} issue at {location}"

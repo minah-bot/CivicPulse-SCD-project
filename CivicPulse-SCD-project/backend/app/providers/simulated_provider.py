@@ -10,11 +10,10 @@ from app.schemas import Category, Priority, TriageResult
 
 # very small keyword table -> category, just for believable-looking demo data
 _KEYWORDS = {
-    Category.water: ["water", "leak", "pipe", "sewage", "drain"],
-    Category.electricity: ["power", "electric", "outage", "wire", "transformer"],
-    Category.sanitation: ["garbage", "trash", "waste", "dump", "smell"],
-    Category.roads: ["road", "pothole", "traffic", "street", "bridge"],
-    Category.streetlights: ["light", "lamp", "dark", "streetlight"],
+    Category.WATER: ["water", "leak", "pipe", "sewage", "drain"],
+    Category.ELECTRICITY: ["power", "electric", "outage", "wire", "transformer", "light", "lamp", "streetlight"],
+    Category.SANITATION: ["garbage", "trash", "waste", "dump", "smell"],
+    Category.ROADS: ["road", "pothole", "traffic", "street", "bridge"],
 }
 
 
@@ -23,16 +22,16 @@ def _pick_category(text: str) -> Category:
     for category, words in _KEYWORDS.items():
         if any(word in lowered for word in words):
             return category
-    return Category.other
+    return Category.OTHER
 
 
 def _pick_priority(text: str) -> Priority:
     lowered = text.lower()
     if any(w in lowered for w in ["urgent", "danger", "emergency", "injur", "fire"]):
-        return Priority.high
+        return Priority.HIGH
     if any(w in lowered for w in ["minor", "small", "whenever"]):
-        return Priority.low
-    return Priority.normal
+        return Priority.LOW
+    return Priority.MEDIUM
 
 
 class SimulatedProvider:
