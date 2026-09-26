@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: civicpulse-config
+  namespace: civicpulse
+data:
+  TRIAGE_PROVIDER: "llm"
+  CACHE_TTL_SECONDS: "30"
+  TRIAGE_CACHE_TTL_HOURS: "24"
+  RATE_LIMIT_PER_MINUTE: "20"
+  # Not the full DATABASE_URL here on purpose -- it contains the DB
+  # password, which must come from the Secret, not the ConfigMap.
+  # config.py builds the final connection string from these plus
+  # POSTGRES_PASSWORD (Secret) at startup.
+  POSTGRES_HOST: "postgres"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "civicpulse"
+  POSTGRES_USER: "civicpulse"
+  REDIS_URL: "redis://redis:6379/0"
