@@ -1,0 +1,61 @@
+﻿services:
+  database:
+    image: postgres:16-alpine
+    container_name: civicpulse-database
+    environment:
+      POSTGRES_USER: civicpulse
+      POSTGRES_PASSWORD: civicpulse
+      POSTGRES_DB: civicpulse
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U civicpulse -d civicpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cache:
+    image: redis:7-alpine
+    container_name: civicpulse-cache
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./CivicPulse-SCD-project/backend
+      dockerfile: Dockerfile
+    container_name: civicpulse-backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://civicpulse:civicpulse@database:5432/civicpulse
+      REDIS_URL: redis://cache:6379/0
+      TRIAGE_PROVIDER: simulated
+      RATE_LIMIT_PER_MINUTE: 30
+      CACHE_TTL_SECONDS: 30
+      TRIAGE_CACHE_TTL_HOURS: 24
+      GROQ_API_KEY: ""
+      GEMINI_API_KEY: ""
+      OLLAMA_BASE_URL: http://ollama:11434
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: civicpulse-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
