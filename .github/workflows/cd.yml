@@ -53,6 +53,17 @@ jobs:
           kustomize edit set image ghcr.io/minah-bot/civicpulse-backend=ghcr.io/minah-bot/civicpulse-backend:${{ github.sha }}
           kustomize edit set image ghcr.io/minah-bot/civicpulse-frontend=ghcr.io/minah-bot/civicpulse-frontend:${{ github.sha }}
 
+      - name: Create GHCR pull secret
+        run: |
+          kubectl create namespace civicpulse --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret docker-registry ghcr-secret \
+            --namespace=civicpulse \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            --docker-email=noreply@example.com \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Deploy to ephemeral cluster
         run: kubectl apply -k k8s/overlays/dev
 
