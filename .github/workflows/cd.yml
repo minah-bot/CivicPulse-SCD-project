@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - dev
-      - feature/person-c-frontend-foundation
   workflow_dispatch:
 
 permissions:
@@ -29,7 +28,7 @@ jobs:
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
-          context: ./CivicPulse-SCD-project/backend
+          context: ./backend
           push: true
           tags: ghcr.io/minah-bot/civicpulse-backend:${{ github.sha }}
 
@@ -49,13 +48,13 @@ jobs:
         uses: imranismail/setup-kustomize@v2
 
       - name: Set image tags
-        working-directory: CivicPulse-SCD-project/k8s/overlays/dev
+        working-directory: k8s/overlays/dev
         run: |
           kustomize edit set image ghcr.io/minah-bot/civicpulse-backend=ghcr.io/minah-bot/civicpulse-backend:${{ github.sha }}
           kustomize edit set image ghcr.io/minah-bot/civicpulse-frontend=ghcr.io/minah-bot/civicpulse-frontend:${{ github.sha }}
 
       - name: Deploy to ephemeral cluster
-        run: kubectl apply -k CivicPulse-SCD-project/k8s/overlays/dev
+        run: kubectl apply -k k8s/overlays/dev
 
       - name: Wait for deployments
         run: |

@@ -3,11 +3,11 @@
 on:
   push:
     paths:
-      - "CivicPulse-SCD-project/backend/**"
+      - "backend/**"
       - ".github/workflows/backend-ci.yml"
   pull_request:
     paths:
-      - "CivicPulse-SCD-project/backend/**"
+      - "backend/**"
       - ".github/workflows/backend-ci.yml"
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: CivicPulse-SCD-project/backend
+        working-directory: backend
 
     steps:
       - name: Checkout repository
