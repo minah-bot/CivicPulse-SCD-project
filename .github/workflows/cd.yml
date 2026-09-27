@@ -61,6 +61,15 @@ jobs:
           kubectl rollout status deployment/backend -n civicpulse --timeout=180s
           kubectl rollout status deployment/frontend -n civicpulse --timeout=180s
 
+      - name: Debug deployment failure
+        if: failure()
+        run: |
+          kubectl get pods -n civicpulse -o wide
+          kubectl describe pods -n civicpulse
+          kubectl logs deployment/backend -n civicpulse --tail=100 || true
+          kubectl logs deployment/frontend -n civicpulse --tail=100 || true
+          kubectl get events -n civicpulse --sort-by=.lastTimestamp
+
       - name: Smoke test backend health
         run: |
           kubectl port-forward -n civicpulse svc/backend 8000:8000 >/tmp/civicpulse-port-forward.log 2>&1 &
