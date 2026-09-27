@@ -1,6 +1,7 @@
-import os
+﻿import os
 from functools import lru_cache
 from dataclasses import dataclass
+from urllib.parse import quote_plus
 
 
 @dataclass(frozen=True)
@@ -18,10 +19,23 @@ class Settings:
 
 @lru_cache
 def get_settings() -> Settings:
+    database_url = os.environ.get("DATABASE_URL")
+
+    if not database_url:
+        postgres_host = os.environ.get("POSTGRES_HOST", "localhost")
+        postgres_port = os.environ.get("POSTGRES_PORT", "5432")
+        postgres_db = os.environ.get("POSTGRES_DB", "civicpulse")
+        postgres_user = os.environ.get("POSTGRES_USER", "civicpulse")
+        postgres_password = os.environ.get("POSTGRES_PASSWORD", "civicpulse")
+
+        database_url = (
+            f"postgresql+psycopg://"
+            f"{quote_plus(postgres_user)}:{quote_plus(postgres_password)}"
+            f"@{postgres_host}:{postgres_port}/{postgres_db}"
+        )
+
     return Settings(
-        database_url=os.environ.get(
-            "DATABASE_URL", "postgresql+psycopg://civicpulse:civicpulse@localhost:5432/civicpulse"
-        ),
+        database_url=database_url,
         redis_url=os.environ.get("REDIS_URL", "redis://localhost:6379/0"),
         triage_provider=os.environ.get("TRIAGE_PROVIDER", "simulated"),
         rate_limit_per_minute=int(os.environ.get("RATE_LIMIT_PER_MINUTE", "30")),
