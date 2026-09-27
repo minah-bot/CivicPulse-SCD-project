@@ -9,9 +9,10 @@ from app.schemas import Category, Priority, TriageResult
 
 _RULES: list[tuple[Category, list[str]]] = [
     (Category.WATER, ["water", "leak", "pipe", "sewage", "drain", "flood"]),
-    (Category.ELECTRICITY, ["power", "electric", "outage", "wire", "transformer", "spark", "light", "lamp", "streetlight", "bulb"]),
+    (Category.ELECTRICITY, ["power", "electric", "outage", "wire", "transformer", "spark"]),
     (Category.SANITATION, ["garbage", "trash", "waste", "dump", "smell", "rotting"]),
     (Category.ROADS, ["road", "pothole", "traffic", "street", "bridge", "crack"]),
+    (Category.SAFETY, ["light", "lamp", "dark", "streetlight", "bulb", "unsafe", "danger"]),  # was "streetlights" -- schema replaced it with SAFETY
 ]
 
 _URGENT_WORDS = ["urgent", "danger", "emergency", "injur", "fire", "collapse", "unsafe"]

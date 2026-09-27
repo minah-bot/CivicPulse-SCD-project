@@ -11,9 +11,10 @@ from app.schemas import Category, Priority, TriageResult
 # very small keyword table -> category, just for believable-looking demo data
 _KEYWORDS = {
     Category.WATER: ["water", "leak", "pipe", "sewage", "drain"],
-    Category.ELECTRICITY: ["power", "electric", "outage", "wire", "transformer", "light", "lamp", "streetlight"],
+    Category.ELECTRICITY: ["power", "electric", "outage", "wire", "transformer"],
     Category.SANITATION: ["garbage", "trash", "waste", "dump", "smell"],
     Category.ROADS: ["road", "pothole", "traffic", "street", "bridge"],
+    Category.SAFETY: ["light", "lamp", "dark", "streetlight"],
 }
 
 

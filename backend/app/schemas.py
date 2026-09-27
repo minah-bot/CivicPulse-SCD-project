@@ -1,21 +1,19 @@
 """
->>> SHARED CONTRACT <<<
+SHARED CONTRACT
+
 This file is read by Person B (imports Category/Priority/TriageResult)
 and mirrored by hand by Person C in frontend/src/api/types.ts.
 Do NOT change field names/enums without flagging the group first.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Protocol
 
 from pydantic import BaseModel, Field, field_validator
 
-
-# ---------------------------------------------------------------------------
-# Enums
-# ---------------------------------------------------------------------------
 
 class Category(str, Enum):
     WATER = "water"
@@ -25,6 +23,13 @@ class Category(str, Enum):
     SAFETY = "safety"
     OTHER = "other"
 
+    water = "water"
+    electricity = "electricity"
+    roads = "roads"
+    sanitation = "sanitation"
+    safety = "safety"
+    other = "other"
+
 
 class Priority(str, Enum):
     LOW = "low"
@@ -32,6 +37,10 @@ class Priority(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
+    low = "low"
+    medium = "medium"
+    high = "high"
+    critical = "critical"
 
 class Status(str, Enum):
     OPEN = "open"
@@ -40,28 +49,13 @@ class Status(str, Enum):
     REJECTED = "rejected"
 
 
-# Explicit transition table (Rubric C: "explicit transition table, not a chain of ifs")
-# key = current status, value = set of statuses it may move to
 ALLOWED_TRANSITIONS: dict[Status, set[Status]] = {
     Status.OPEN: {Status.IN_PROGRESS, Status.REJECTED},
     Status.IN_PROGRESS: {Status.RESOLVED, Status.REJECTED},
-    Status.RESOLVED: set(),   # terminal
-    Status.REJECTED: set(),  # terminal
+    Status.RESOLVED: set(),
+    Status.REJECTED: set(),
 }
 
-
-# ---------------------------------------------------------------------------
-# AI layer contract (Person B implements TriageProvider against this)
-# ---------------------------------------------------------------------------
-
-class TriagedBy(str, Enum):
-    """Every value triage_service.py can produce. simulated (used in CI/dev)
-    reports as `rules` since it stands in for a real LLM without one configured."""
-
-    llm_groq = "llm:groq"
-    llm_ollama = "llm:ollama"
-    rules = "rules"
-    rules_fallback = "rules:fallback"
 
 class TriageResult(BaseModel):
     category: Category
@@ -70,9 +64,19 @@ class TriageResult(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
 
 
-# ---------------------------------------------------------------------------
-# Complaint I/O
-# ---------------------------------------------------------------------------
+class TriageProvider(Protocol):
+    name: str
+
+    def triage(self, text: str, location: str) -> TriageResult:
+        ...
+
+
+class TriagedBy(str, Enum):
+    llm_groq = "llm:groq"
+    llm_ollama = "llm:ollama"
+    rules = "rules"
+    rules_fallback = "rules:fallback"
+
 
 class ComplaintCreate(BaseModel):
     text: str = Field(min_length=10, max_length=2000)
@@ -113,10 +117,6 @@ class ComplaintListOut(BaseModel):
 class StatusUpdate(BaseModel):
     status: Status
 
-
-# ---------------------------------------------------------------------------
-# Stats / meta
-# ---------------------------------------------------------------------------
 
 class StatsOut(BaseModel):
     total: int

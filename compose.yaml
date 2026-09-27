@@ -22,6 +22,7 @@ services:
       - "8000:8000"
     environment:
       TRIAGE_PROVIDER: simulated
+      DATABASE_URL: postgresql+psycopg://civicpulse:civicpulse_dev_only@postgres:5432/civicpulse
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
       POSTGRES_DB: civicpulse
