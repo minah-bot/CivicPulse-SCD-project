@@ -1,6 +1,5 @@
 import json
 import logging
-import signal
 import sys
 import time
 import uuid
@@ -34,37 +33,20 @@ logger.setLevel(logging.INFO)
 
 
 # ---------------------------------------------------------------------------
-# Graceful shutdown: stop accepting new requests, let in-flight ones drain,
-# close the DB pool, exit. Without this a rolling update drops live requests.
+# Graceful shutdown: uvicorn installs its own SIGTERM handler. On SIGTERM it
+# stops accepting new connections, lets in-flight requests finish, then runs
+# the shutdown half of this lifespan. We must NOT override that handler.
 # ---------------------------------------------------------------------------
-
-_shutting_down = False
-
-
-def _handle_sigterm(signum, frame):
-    global _shutting_down
-    _shutting_down = True
-    logger.info("SIGTERM received, draining in-flight requests")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    try:
-        signal.signal(signal.SIGTERM, _handle_sigterm)
-    except ValueError:
-        # signal.signal() only works in the main thread of the main
-        # interpreter. Starlette's TestClient runs the lifespan in a
-        # worker thread, so this is expected (and harmless) under pytest.
-        # Real deployments (uvicorn) run this in the main thread and register fine.
-        logger.info("SIGTERM handler not registered (not running in main thread)")
-
     logger.info("civicpulse backend starting up")
     yield
     from app.database import engine
 
     engine.dispose()  # close pool connections cleanly
     logger.info("civicpulse backend shut down cleanly")
-
 
 app = FastAPI(title="CivicPulse API", lifespan=lifespan)
 
