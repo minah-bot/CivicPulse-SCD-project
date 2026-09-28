@@ -20,7 +20,7 @@ class OllamaProvider:
     name = "llm:ollama"
 
     def __init__(self, timeout_seconds: float = 15.0):
-        self._base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+        self._base_url = os.environ.get("OLLAMA_BASE_URL", "http://ollama:11434")
         self._model = os.environ.get("OLLAMA_MODEL", "llama3.1")
         self._timeout = timeout_seconds
 

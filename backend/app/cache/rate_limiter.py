@@ -8,7 +8,7 @@ import time
 
 import redis
 
-_client = redis.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
+_client = redis.from_url(os.environ.get("REDIS_URL", "redis://redis:6379/0"))
 
 _LIMIT = int(os.environ.get("RATE_LIMIT_PER_MINUTE", "10"))
 _WINDOW_SECONDS = 60
