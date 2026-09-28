@@ -1,3 +1,7 @@
+import os
+
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

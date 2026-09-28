@@ -13,7 +13,7 @@ import redis
 
 from app.schemas import TriageResult
 
-_client = redis.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
+_client = redis.from_url(os.environ.get("REDIS_URL", "redis://redis:6379/0"))
 _TTL_SECONDS = int(os.environ.get("TRIAGE_CACHE_TTL_HOURS", "24")) * 3600
 
 _hits = 0

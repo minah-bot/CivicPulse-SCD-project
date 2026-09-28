@@ -22,7 +22,7 @@ def get_settings() -> Settings:
     database_url = os.environ.get("DATABASE_URL")
 
     if not database_url:
-        postgres_host = os.environ.get("POSTGRES_HOST", "localhost")
+        postgres_host = os.environ.get("POSTGRES_HOST", "postgres")
         postgres_port = os.environ.get("POSTGRES_PORT", "5432")
         postgres_db = os.environ.get("POSTGRES_DB", "civicpulse")
         postgres_user = os.environ.get("POSTGRES_USER", "civicpulse")
@@ -36,7 +36,7 @@ def get_settings() -> Settings:
 
     return Settings(
         database_url=database_url,
-        redis_url=os.environ.get("REDIS_URL", "redis://localhost:6379/0"),
+        redis_url=os.environ.get("REDIS_URL", "redis://redis:6379/0"),
         triage_provider=os.environ.get("TRIAGE_PROVIDER", "simulated"),
         rate_limit_per_minute=int(os.environ.get("RATE_LIMIT_PER_MINUTE", "30")),
         cache_ttl_seconds=int(os.environ.get("CACHE_TTL_SECONDS", "30")),
