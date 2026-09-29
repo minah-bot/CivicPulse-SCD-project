@@ -1,4 +1,5 @@
-﻿import { useEffect, useState } from "react";
+﻿
+import { useCallback, useEffect, useState } from "react";
 
 import {
   getComplaints,
@@ -40,7 +41,6 @@ const statuses: Status[] = [
 
 function Dashboard() {
   const [data, setData] = useState<ComplaintList | null>(null);
-
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState("");
   const [priority, setPriority] = useState("");
@@ -56,7 +56,7 @@ function Dashboard() {
     Record<string, Status>
   >({});
 
-  async function loadComplaints() {
+  const loadComplaints = useCallback(async () => {
     setLoading(true);
     setError("");
 
@@ -87,11 +87,12 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, category, priority, status]);
+
 
   useEffect(() => {
     void loadComplaints();
-  }, [page, category, priority, status]);
+  }, [loadComplaints]);
 
   function handleCategoryChange(
     event: React.ChangeEvent<HTMLSelectElement>,
@@ -181,6 +182,7 @@ function Dashboard() {
   }
 
   const total = data?.total ?? 0;
+
   const totalPages = Math.max(
     1,
     Math.ceil(total / PAGE_SIZE),

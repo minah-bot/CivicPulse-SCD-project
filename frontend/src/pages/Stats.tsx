@@ -1,4 +1,5 @@
-﻿import { useEffect, useState } from "react";
+﻿
+import { useCallback, useEffect, useState } from "react";
 
 import { getStats } from "../api/client";
 import type { StatsResponse } from "../api/types";
@@ -8,7 +9,7 @@ function Stats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function loadStats() {
+  const loadStats = useCallback(async () => {
     setLoading(true);
     setError("");
 
@@ -24,11 +25,12 @@ function Stats() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
 
   useEffect(() => {
     void loadStats();
-  }, []);
+  }, [loadStats]);
 
   if (loading) {
     return <p>Loading statistics...</p>;
@@ -38,9 +40,13 @@ function Stats() {
     return (
       <section>
         <h1>Statistics</h1>
+
         <p role="alert">{error}</p>
 
-        <button type="button" onClick={() => void loadStats()}>
+        <button
+          type="button"
+          onClick={() => void loadStats()}
+        >
           Retry
         </button>
       </section>
@@ -58,21 +64,25 @@ function Stats() {
       <h2>Complaints by Category</h2>
 
       <ul>
-        {Object.entries(stats.by_category).map(([category, count]) => (
-          <li key={category}>
-            <strong>{category}:</strong> {count}
-          </li>
-        ))}
+        {Object.entries(stats.by_category).map(
+          ([category, count]) => (
+            <li key={category}>
+              <strong>{category}:</strong> {count}
+            </li>
+          ),
+        )}
       </ul>
 
       <h2>Complaints by Priority</h2>
 
       <ul>
-        {Object.entries(stats.by_priority).map(([priority, count]) => (
-          <li key={priority}>
-            <strong>{priority}:</strong> {count}
-          </li>
-        ))}
+        {Object.entries(stats.by_priority).map(
+          ([priority, count]) => (
+            <li key={priority}>
+              <strong>{priority}:</strong> {count}
+            </li>
+          ),
+        )}
       </ul>
     </section>
   );
