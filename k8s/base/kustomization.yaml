@@ -15,4 +15,5 @@ resources:
   - frontend-service.yaml
   - ingress.yaml
   - hpa.yaml
+  - vpa.yaml
   - pdb.yaml
