@@ -13,3 +13,13 @@ Consequences
 What this limits: reporter_contact — the field most likely to contain a direct personal identifier — structurally cannot reach the LLM provider, because the code path that calls triage() never has access to it in the first place. This isn't a policy we have to remember to follow; it's enforced by the function signature.
 What this doesn't cover: if someone writes "my name is X, call me at Y" inside the complaint text field itself, that does reach Groq's API as part of normal classification, subject to Groq's own data usage terms. A production version of this system would likely want a redaction pass before the LLM call — this is named here as a known gap, not something we're claiming to have solved.
 
+
+## Addendum: Redis persistence (AOF)
+
+Redis runs with `--appendonly yes` (see `compose.yaml`, `k8s/base/redis-deployment.yaml`)
+even though it's "just a cache." Losing the rate-limiter counters or the
+triage cache on every pod restart would mean: (1) rate limits reset,
+letting a restart-timed burst bypass throttling briefly, and (2) every
+cached triage result is lost at once, causing a spike of LLM calls
+immediately after any restart -- risking free-tier quota exhaustion at
+exactly the worst time. AOF persistence avoids both.

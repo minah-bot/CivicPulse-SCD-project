@@ -1,150 +1,64 @@
-﻿# CivicPulse Runbook
-
-## 1. Project Overview
-
-CivicPulse is a civic complaint management application.
-
-The frontend is implemented using React, TypeScript, Vite, React Router, and Nginx.
-
-## 2. Frontend Development
-
-Frontend source code:
-
-frontend/
-
-Install dependencies:
-
-npm ci
-
-Start development server:
-
-npm run dev
-
-Build production version:
-
-npm run build
-
-## 3. Frontend Routes
-
-/
-    Submit Complaint
-
-/dashboard
-    Dashboard
-
-/stats
-    Statistics
-
-## 4. API
-
-The frontend uses the following API contract:
-
-POST /api/complaints
-GET /api/complaints
-GET /api/complaints/{id}
-PATCH /api/complaints/{id}/status
-GET /api/stats
-GET /api/meta/providers
-GET /api/health
-
-## 5. Docker
-
-Frontend Docker files:
-
-frontend/Dockerfile
-frontend/.dockerignore
-docker-compose.yml
-
-Build the frontend image:
-
-docker build -t civicpulse-frontend ./frontend
-
-Run the frontend container:
-
-docker run --rm -p 5173:80 civicpulse-frontend
-
-## 6. Docker Compose
-
-Build and start:
-
-docker compose build
-docker compose up
-
-Stop:
-
-docker compose down
-
-## 7. Kubernetes
-
-Kubernetes files are located in:
-
-k8s/
-
-Resources:
-
-frontend-deployment.yaml
-frontend-service.yaml
-kustomization.yaml
-
-Apply:
-
-kubectl apply -k k8s/
-
-Check deployment:
-
-kubectl get deployments
-
-Check pods:
-
-kubectl get pods
-
-Check service:
-
-kubectl get services
-
-## 8. GitHub Actions
-
-Frontend CI workflow:
-
-.github/workflows/frontend-ci.yml
-
-The workflow installs Node.js 22, runs npm ci, and verifies the production build.
-
-## 9. Troubleshooting
-
-Check Node.js:
-
-node --version
-npm --version
-
-Check Docker:
-
-docker --version
-docker compose version
-
-Check Kubernetes:
-
-kubectl cluster-info
-kubectl get nodes
-
-## 10. Current Limitation
-
-The frontend is designed against the agreed CivicPulse API contract.
-
-Full API integration requires the backend implementation to be available and running.
-
-Docker and Kubernetes deployment require the corresponding tools to be installed and configured.
-
-## 11. Useful Git Commands
-
-Check status:
-
-git status
-
-View recent commits:
-
-git log --oneline -5
-
-Push changes:
-
-git push
+# CivicPulse Runbook
+
+## Deploy
+1. Merge PR into `dev`, confirm `cd.yml` runs green.
+2. CD builds both images, tags with commit SHA, pushes to GHCR.
+3. CD applies `k8s/overlays/prod` with the new SHA via
+   `kustomize edit set image`.
+4. Confirm rollout: `kubectl rollout status deployment/backend -n civicpulse`
+
+## Rollback
+1. Find the previous good SHA: `git log --oneline -5`
+2. `kubectl set image deployment/backend backend=ghcr.io/minah-bot/civicpulse-backend:<previous-sha> -n civicpulse`
+3. Repeat for `frontend`.
+4. Confirm: `kubectl rollout status deployment/backend -n civicpulse`
+
+## Reading logs
+cat > README.md << 'EOF'
+# CivicPulse
+
+An end-to-end municipal complaint intake, triage and operations platform.
+A citizen submits a complaint; an LLM classifies it by category, priority,
+and summary; it's stored and shown on a live dashboard.
+
+## Architecture
+
+```mermaid
+graph LR
+    U[Citizen] --> F[Frontend<br/>React + nginx]
+    F --> B[Backend<br/>FastAPI]
+    B --> D[(Postgres)]
+    B --> R[(Redis)]
+    B --> L[LLM Provider<br/>Groq / Ollama / Rules]
+```
+
+## Quickstart
+
+```bash
+git clone https://github.com/minah-bot/CivicPulse-SCD-project.git
+cd CivicPulse-SCD-project
+docker compose up --build
+```
+Frontend: http://localhost:5173
+Backend health: http://localhost:8000/health
+
+## API
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | /api/complaints | Submit a complaint, triggers AI triage |
+| GET | /api/complaints/{id} | Fetch one complaint |
+| GET | /api/complaints | List, filterable, paginated |
+| PATCH | /api/complaints/{id}/status | Update status (enforces transition table) |
+| GET | /api/stats | Aggregate counts, cached |
+| GET | /api/meta/providers | Which AI provider is active |
+| GET | /health | Liveness |
+| GET | /ready | Readiness (checks DB + Redis) |
+
+Full contract: `docs/API-CONTRACT.md`
+
+## Team
+
+- Person A — Backend & Data
+- Person B — AI Layer & Cache
+- Person C — Frontend & DevOps
